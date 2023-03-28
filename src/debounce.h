@@ -8,7 +8,7 @@ typedef struct debounce_pin
 {
     GPIO_TypeDef *bank;
     uint16_t pin;
-    uint8_t buffer;             /* the debounce buffer */
+    uint16_t buffer;             /* the debounce buffer */
 } debounce_pin_t;
 
 // initialize the structure after port and pin have been set

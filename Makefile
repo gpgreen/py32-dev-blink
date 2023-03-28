@@ -21,7 +21,6 @@ CHIP = PY32F030x8
 ######################################
 # C sources
 C_SOURCES += src/main.c
-C_SOURCES += src/debounce.c
 C_SOURCES += CMSIS/Device/PY32F0xx/Source/system_py32f0xx.c
 C_SOURCES += PY32F0xx_HAL_Driver/Src/py32f0xx_hal_adc_ex.c
 C_SOURCES += PY32F0xx_HAL_Driver/Src/py32f0xx_hal.c
@@ -112,11 +111,13 @@ CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
+OD = $(GCC_PATH)/$(PREFIX)objdump
 else
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+OD = $(PREFIX)objdump
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -135,7 +136,7 @@ MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 AS_DEFS =
 
 # C defines
-C_DEFS = -D__SOFTFP__ -D${CHIP} -DUSE_HAL_DRIVER -DUSE_HAL_TIM_REGISTER_CALLBACKS
+C_DEFS = -D__SOFTFP__ -D${CHIP} -DUSE_HAL_DRIVER
 
 
 # AS includes
@@ -167,7 +168,7 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--print-memory-usage
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).elf_asm $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
 
 #######################################
@@ -188,6 +189,9 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+
+$(BUILD_DIR)/$(TARGET).elf_asm: $(BUILD_DIR)/$(TARGET).elf
+	$(OD) -dl $< > $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
