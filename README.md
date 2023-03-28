@@ -3,6 +3,9 @@ This repo contains a GCC/Makefile-based build system for Puya PY32 MCUs, includi
 
 Also included are vscode build/launch configs using Cortex-Debug and pyOCD.
 
+This repository is forked from: https://github.com/jaydcarlson/py32-template
+It is meant to be used with the py32-dev board here: https://github.com/gpgreen/py32_dev
+
 ## pyOCD support
 Puya's DFP is not currently indexed anywhere, so pyOCD can't automatically download it with the typical `pack update` and `pack install` commands. However, we can manually download and extract this pack, and then install the pack using cmsis-pack-manager (which PyOCD uses under the hood)
 
