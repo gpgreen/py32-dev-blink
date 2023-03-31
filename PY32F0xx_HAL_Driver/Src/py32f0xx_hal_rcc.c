@@ -81,7 +81,12 @@
 
 #define PLLSOURCE_NONE             (0U)
 #define PLLSOURCE_FREQ_MIN         (16000000U)
+/* allow PLL to be overclocked by 2MHz */
+#if defined(RCC_PLL_FREQ_OVERCLOCKED)
+#define PLLSOURCE_FREQ_MAX         (25000000U)
+#else
 #define PLLSOURCE_FREQ_MAX         (24000000U)
+#endif
 #endif
 /**
   * @}
@@ -317,7 +322,7 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     /* Check the parameters */
     assert_param(IS_RCC_HSE(RCC_OscInitStruct->HSEState));
 
-    temp_sysclksrc = __HAL_RCC_GET_SYSCLK_SOURCE();      
+    temp_sysclksrc = __HAL_RCC_GET_SYSCLK_SOURCE();
 #if defined(RCC_PLL_SUPPORT)
     temp_pllckcfg = __HAL_RCC_GET_PLL_OSCSOURCE();
 
@@ -338,7 +343,7 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
       if (RCC_OscInitStruct->HSEState != RCC_HSE_OFF)
       {
         assert_param(IS_RCC_HSE_FREQ(RCC_OscInitStruct->HSEFreq));
-        
+
         if (RCC_OscInitStruct->HSEFreq != 0)
         {
           MODIFY_REG(RCC->ECSCR, RCC_ECSCR_HSE_FREQ_Msk, RCC_OscInitStruct->HSEFreq);
@@ -561,7 +566,7 @@ HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
     {
       /* Update LSE configuration in Backup Domain control register    */
       /* Requires to enable write access to Backup Domain of necessary */
-      if (__HAL_RCC_PWR_IS_CLK_DISABLED() != 0U) 
+      if (__HAL_RCC_PWR_IS_CLK_DISABLED() != 0U)
       {
         __HAL_RCC_PWR_CLK_ENABLE();
         pwrclkchanged = SET;
@@ -873,7 +878,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
     }
 #endif
     /* LSI is selected as System Clock Source */
-    else 
+    else
     {
       /* Check the LSI ready flag */
       if (READ_BIT(RCC->CSR, RCC_CSR_LSIRDY) == 0U)
@@ -1095,7 +1100,7 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
 #if defined(RCC_PLL_SUPPORT)
   uint32_t pllsource;
 #endif
-  
+
   if (__HAL_RCC_GET_SYSCLK_SOURCE() == RCC_CFGR_SWS_HSI)
   {
     /* HSISYS can be derived for HSI */
@@ -1198,7 +1203,7 @@ void HAL_RCC_GetOscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
   assert_param(RCC_OscInitStruct != (void *)NULL);
 
   /* Set all possible values for the Oscillator type parameter ---------------*/
-#if defined(RCC_LSE_SUPPORT)    
+#if defined(RCC_LSE_SUPPORT)
   RCC_OscInitStruct->OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI | \
                                       RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_LSI;
 #else
@@ -1218,9 +1223,9 @@ void HAL_RCC_GetOscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
   {
     RCC_OscInitStruct->HSEState = RCC_HSE_OFF;
   }
-  
+
   RCC_OscInitStruct->HSEFreq = (RCC->ECSCR & RCC_ECSCR_HSE_FREQ);
-  
+
   /* Get the HSI configuration -----------------------------------------------*/
   if ((RCC->CR & RCC_CR_HSION) == RCC_CR_HSION)
   {
@@ -1258,7 +1263,7 @@ void HAL_RCC_GetOscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
   {
     RCC_OscInitStruct->LSEState = RCC_LSE_OFF;
   }
-  
+
   RCC_OscInitStruct->LSEDriver = (RCC->ECSCR & RCC_ECSCR_LSE_DRIVER);
 #endif
 #if defined(RCC_PLL_SUPPORT)
@@ -1271,7 +1276,7 @@ void HAL_RCC_GetOscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
   {
     RCC_OscInitStruct->PLL.PLLState = RCC_PLL_OFF;
   }
-  
+
   RCC_OscInitStruct->PLL.PLLSource = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC);
 #endif
 }

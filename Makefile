@@ -21,6 +21,7 @@ CHIP = PY32F030x8
 ######################################
 # C sources
 C_SOURCES += src/main.c
+C_SOURCES += src/debounce.c
 C_SOURCES += CMSIS/Device/PY32F0xx/Source/system_py32f0xx.c
 C_SOURCES += PY32F0xx_HAL_Driver/Src/py32f0xx_hal_adc_ex.c
 C_SOURCES += PY32F0xx_HAL_Driver/Src/py32f0xx_hal.c
@@ -136,7 +137,10 @@ MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 AS_DEFS =
 
 # C defines
-C_DEFS = -D__SOFTFP__ -D${CHIP} -DUSE_HAL_DRIVER
+# If we are using the initial batch of py32_dev boards, they have a 25mhz crystal by mistake
+# We can define RCC_PLL_FREQ_OVERCLOCKED to allow the clocks to be initialized by the HAl
+# code and not throw and error and freeze because the max frequency check is violated
+C_DEFS = -D__SOFTFP__ -D${CHIP} -DUSE_HAL_DRIVER -DRCC_PLL_FREQ_OVERCLOCKED
 
 
 # AS includes
