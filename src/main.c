@@ -2,12 +2,12 @@
 #include "py32f0xx_hal.h"
 #include "debounce.h"
 
-// how many times timer16 overflows for led change
-const int TIMER16_OVERFLOW_SLOW = 1200;
-const int TIMER16_OVERFLOW_FAST = 300;
+// timer16 overflow count for led change
+const int TIM16_OVF_CNT_SLOW = 1200;
+const int TIM16_OVF_CNT_FAST = 300;
 
 // Timer16 is going to overflow at 50MHz / 2 * 20000 = 0.8ms
-// this gives a debounce period of ~13ms for 16bits
+// this gives a debounce period of 13ms for 16bits
 static TIM_HandleTypeDef tim16_hndl = {
     .Instance = TIM16,
     .Init.Prescaler = 2 - 1,
@@ -74,9 +74,6 @@ int main (void)
 {
     HAL_Init();
 
-    // output clock on MCO pin (PA8)
-    HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_SYSCLK, RCC_MCODIV_1);
-
     APP_SystemClockConfig();
     SystemCoreClockUpdate();
 
@@ -108,6 +105,7 @@ int main (void)
             led_flash_slow = led_flash_slow ? 0 : 1;
         }
     }
+
 }
 
 /**
@@ -119,10 +117,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     static int count = 0;
     count++;
-    if (led_flash_slow && count >= TIMER16_OVERFLOW_SLOW) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
-        count = 0;
-    } else if (!led_flash_slow && count >= TIMER16_OVERFLOW_FAST) {
+    if ((led_flash_slow && count >= TIM16_OVF_CNT_SLOW) ||
+        (!led_flash_slow && count >= TIM16_OVF_CNT_FAST)) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
         count = 0;
     }
@@ -139,6 +135,9 @@ static void APP_SystemClockConfig(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+    // output sysclock on MCO pin (PA8)
+    HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_SYSCLK, RCC_MCODIV_1);
 
     // setup the HSE clock
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;

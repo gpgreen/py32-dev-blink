@@ -4,3 +4,4 @@ build/
 .vscode/c_cpp_properties.json
 .cache/
 compile_commands.json
+.gdb_history
